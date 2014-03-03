@@ -1,0 +1,43 @@
+#!/bin/bash
+
+echo "EmuPi Package Launcher"
+
+if [ $# -lt 1 ];
+then
+	echo "Usage: $0 <PackageName>"
+	exit
+fi
+
+if ! [ -e $1 ];
+then
+	echo "Package doesn't exist"
+	exit
+fi
+
+DIR=$PWD
+
+rm -r /tmp/rom
+mkdir /tmp/rom
+cd /tmp/rom
+tar -zxf $DIR/$1
+
+if ! [ -e package.json ];
+then
+	echo "Package is invalid"
+	exit
+fi
+platform=$( cat package.json | grep -Po '"PlatformID":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d",")
+rom=$( cat package.json | grep -Po '"ROM":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d"," | sed "s/\"//g")
+
+echo $rom
+
+case $platform in
+	*26*)
+		mupen64plus $rom
+		;;
+	*106*)
+		vba $rom
+		;;
+#	*) echo "Unsupported PlatformID"
+esac
+
