@@ -29,15 +29,25 @@ fi
 platform=$( cat package.json | grep -Po '"PlatformID":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d",")
 rom=$( cat package.json | grep -Po '"ROM":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d"," | sed "s/\"//g")
 
+config=$( cat package.json | grep -Po '"Config":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d"," | sed "s/\"//g")
+
 echo $rom
 
 case $platform in
+	
+	*23*)
+		pcsx -nogui -cdfile $rom
+		;;
 	*26*)
 		mupen64plus $rom
 		;;
 	*106*)
-		vba $rom
+		if [ -z "$config" ]; then
+			vbam $rom
+		else
+			vbam -c $config $rom
+		fi
 		;;
-#	*) echo "Unsupported PlatformID"
+	*) echo "Unsupported PlatformID";;
 esac
 
