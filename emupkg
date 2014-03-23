@@ -14,12 +14,12 @@ then
 	exit
 fi
 
-DIR=$PWD
+pkg=$(readlink -f $1)
 
 rm -r /tmp/rom
 mkdir /tmp/rom
 cd /tmp/rom
-tar -zxf $DIR/$1
+tar -zxf $pkg
 
 if ! [ -e package.json ];
 then
