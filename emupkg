@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function parseJSON {
+	cat $1 | grep -Po '"$2":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d","
+}
+
 echo "EmuPi Package Launcher"
 
 if [ $# -lt 1 ];
@@ -26,26 +30,33 @@ then
 	echo "Package is invalid"
 	exit
 fi
+
+echo $(parseJSON package.json PlatformID)
+
 platform=$( cat package.json | grep -Po '"PlatformID":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d",")
 rom=$( cat package.json | grep -Po '"ROM":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d"," | sed "s/\"//g")
-
 config=$( cat package.json | grep -Po '"Config":\s*((\b\d+\b|"[^"\r\n]*")(,|\s*}))' | cut -d ":" -f 2 | cut -f1 -d"," | sed "s/\"//g")
 
 echo $rom
 
-case $platform in
-	
+echo "   ██████   ███   ██   ███    ███  █████████ ███"
+echo "   ██      ██████████  ███    ███  ███   ███ ███"
+echo "   ██████  ███ ██ ███  ███    ███  █████████ ███"
+echo "   ██      ███ ██ ███  ███    ███  ███       ███"
+echo "   ██████  ███ ██ ███  ██████████  ███       ███"
+
+case $platform in	
 	*23*)
-		pcsx -nogui -cdfile $rom
+		pcsx -nogui -cdfile $rom >> /var/log/emulog.txt 2>&1
 		;;
 	*26*)
-		mupen64plus $rom
+		mupen64plus $rom > /dev/null
 		;;
 	*106*)
 		if [ -z "$config" ]; then
-			vbam $rom
+			vbam $rom #>> /var/log/emulog.txt 2>&1
 		else
-			vbam -c $config $rom
+			vbam -c $config $rom #>> /var/log/emulog.txt 2>&1
 		fi
 		;;
 	*) echo "Unsupported PlatformID";;
